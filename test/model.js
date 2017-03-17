@@ -5,7 +5,8 @@ test.before(() => {
   Object.assign(process.env, {
     MYSQL_USER: 'root',
     MYSQL_PASSWORD: '',
-    MYSQL_DB: 'mysql',
+    MYSQL_DATABASE: 'mysql',
+    MYSQL_CONNECTION_LIMIT: 20,
     MYSQL_READ_HOST_0: 'localhost',
     MYSQL_WRITE_HOST_0: 'localhost',
   });

@@ -3,7 +3,8 @@ import test from 'ava';
 const config = {
   MYSQL_USER: 'root',
   MYSQL_PASSWORD: '',
-  MYSQL_DB: 'mysql',
+  MYSQL_DATABASE: 'mysql',
+  MYSQL_CONNECTION_LIMIT: 20,
 };
 
 test('No write host provided', async (t) => {

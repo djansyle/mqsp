@@ -11,7 +11,7 @@ Promise.promisifyAll([Pool, Connection]);
  * Environment Format
  * MYSQL_WRITE_HOST_0
  * MYSQL_READ_HOST_0
- * MYSQL_DB
+ * MYSQL_DATABASE
  * MYSQL_USER
  * MYSQL_PASSWORD
  * MYSQL_CONNECTION_LIMIT
@@ -74,7 +74,7 @@ const config = {
   connectionLimit: env.MYSQL_CONNECTION_LIMIT,
   user: env.MYSQL_USER,
   password: env.MYSQL_PASSWORD,
-  database: env.MYSQL_DB,
+  database: env.MYSQL_DATABASE,
 };
 
 function createPool(host) {
