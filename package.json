@@ -1,0 +1,47 @@
+{
+  "name": "mqsp",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "ava",
+    "clean": "rm -rf build && rm ./index.js",
+    "build": "npm run clean && babel src --out-dir build && babel src/index.js --out-file ./index.js"
+  },
+  "author": "djansyle",
+  "license": "ISC",
+  "devDependencies": {
+    "ava": "^0.18.2",
+    "babel": "^6.23.0",
+    "babel-cli": "^6.24.0",
+    "babel-eslint": "^7.1.1",
+    "babel-plugin-transform-async-to-generator": "^6.22.0",
+    "babel-plugin-transform-es2015-modules-commonjs": "^6.24.0",
+    "eslint": "^3.17.1",
+    "eslint-config-airbnb": "^14.1.0",
+    "eslint-plugin-babel": "^4.1.1",
+    "eslint-plugin-import": "^2.2.0",
+    "eslint-plugin-jsx-a11y": "^4.0.0",
+    "eslint-plugin-react": "^6.10.0"
+  },
+  "dependencies": {
+    "assert": "^1.4.1",
+    "bluebird": "^3.5.0",
+    "debug": "^2.6.3",
+    "mysql": "^2.13.0"
+  },
+  "ava": {
+    "files": [
+      "test/*.js"
+    ],
+    "timeout": "10s",
+    "concurrency": 3,
+    "failFast": true,
+    "powerAssert": false,
+    "require": [
+      "babel-register"
+    ],
+    "babel": "inherit",
+    "verbose": true
+  }
+}

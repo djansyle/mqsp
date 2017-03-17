@@ -1,0 +1,16 @@
+{
+  "extends": ["eslint:recommended", "airbnb"],
+  "env": {
+    "node": true,
+    "es6": true
+  },
+  "rules": {
+    "max-len": ["error", 120],
+    "linebreak-style": ["error", "unix"]
+  },
+  "parser": "babel-eslint",
+  "parserOptions": {
+    "sourceType": "module"
+  },
+  "plugins": ["babel"]
+}
