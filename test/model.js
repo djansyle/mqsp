@@ -28,3 +28,8 @@ test('getRows', async (t) => {
   t.is(res[0].field, 1);
   t.is(res[1].field, 2);
 });
+
+test('query format', async (t) => {
+  const res = await mqsp.getRow('SELECT :val AS field', { val: 1 });
+  t.is(res.field, 1);
+});

@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "ava",
+    "test": "npm run build && ava",
     "clean": "rm -rf build && rm ./index.js",
     "build": "npm run clean && babel src --out-dir build && babel src/index.js --out-file ./index.js"
   },
@@ -28,11 +28,12 @@
     "assert": "^1.4.1",
     "bluebird": "^3.5.0",
     "debug": "^2.6.3",
-    "mysql": "^2.13.0"
+    "mysql": "^2.13.0",
+    "sqlstring": "^2.2.0"
   },
   "ava": {
     "files": [
-      "test/*.js"
+      "test/model.js"
     ],
     "timeout": "10s",
     "concurrency": 3,

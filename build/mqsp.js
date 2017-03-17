@@ -3,7 +3,8 @@ var _Pool = require('mysql/lib/Pool');var _Pool2 = _interopRequireDefault(_Pool)
 var _Connection = require('mysql/lib/Connection');var _Connection2 = _interopRequireDefault(_Connection);
 var _bluebird = require('bluebird');var _bluebird2 = _interopRequireDefault(_bluebird);
 var _debug = require('debug');var _debug2 = _interopRequireDefault(_debug);
-var _assert = require('assert');var _assert2 = _interopRequireDefault(_assert);function _interopRequireDefault(obj) {return obj && obj.__esModule ? obj : { default: obj };}function _asyncToGenerator(fn) {return function () {var gen = fn.apply(this, arguments);return new _bluebird2.default(function (resolve, reject) {function step(key, arg) {try {var info = gen[key](arg);var value = info.value;} catch (error) {reject(error);return;}if (info.done) {resolve(value);} else {return _bluebird2.default.resolve(value).then(function (value) {step("next", value);}, function (err) {step("throw", err);});}}return step("next");});};}
+var _assert = require('assert');var _assert2 = _interopRequireDefault(_assert);
+var _sqlstring = require('sqlstring');var _sqlstring2 = _interopRequireDefault(_sqlstring);function _interopRequireDefault(obj) {return obj && obj.__esModule ? obj : { default: obj };}function _asyncToGenerator(fn) {return function () {var gen = fn.apply(this, arguments);return new _bluebird2.default(function (resolve, reject) {function step(key, arg) {try {var info = gen[key](arg);var value = info.value;} catch (error) {reject(error);return;}if (info.done) {resolve(value);} else {return _bluebird2.default.resolve(value).then(function (value) {step("next", value);}, function (err) {step("throw", err);});}}return step("next");});};}
 
 _bluebird2.default.promisifyAll([_Pool2.default, _Connection2.default]);
 /**
@@ -38,7 +39,37 @@ Object.keys(env).forEach(key => {
 (0, _assert2.default)(writeHosts.length >= 1, 'No write host found.');
 (0, _assert2.default)(readHosts.length >= 1, 'No read host found.');
 
+/**
+                                                                      * Replaces the `:<field>` in the query with the value corresponds in the value
+                                                                      * of `value` if it's an object.
+                                                                      *
+                                                                      * Ex.
+                                                                      * query: SELECT :val AS field
+                                                                      * values: { val: 1 }
+                                                                      *
+                                                                      * will be rewrite as,
+                                                                      * SELECT 1 AS field
+                                                                      *
+                                                                      * If the `values` is array, just reuse the mysql formatter.
+                                                                      * @param query
+                                                                      * @param values
+                                                                      * @returns {String}
+                                                                      */
+function queryFormat(query, values) {
+  if (!values) return query;
+  if (values instanceof Array) {
+    return _sqlstring2.default.format(query, values, false, 'local');
+  }
+  return query.replace(/:(\w+)/g, (txt, key) => {
+    if ({}.hasOwnProperty.call(values, key)) {
+      return this.escape(values[key]);
+    }
+    return txt;
+  });
+}
+
 const config = {
+  queryFormat,
   connectionLimit: env.MYSQL_CONNECTION_LIMIT,
   user: env.MYSQL_USER,
   password: env.MYSQL_PASSWORD,
@@ -166,5 +197,5 @@ class MQSP {
      * @returns {Promise.<void>}
      */
   exec(qs, qa) {var _this8 = this;return _asyncToGenerator(function* () {
-      yield _this8.queryWrite(qs, qa);})();
+      return _this8.queryWrite(qs, qa);})();
   }}exports.default = MQSP;

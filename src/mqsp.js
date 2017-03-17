@@ -4,6 +4,7 @@ import Connection from 'mysql/lib/Connection';
 import Promise from 'bluebird';
 import debug from 'debug';
 import assert from 'assert';
+import SqlString from 'sqlstring';
 
 Promise.promisifyAll([Pool, Connection]);
 /**
@@ -38,7 +39,38 @@ Object.keys(env).forEach((key) => {
 assert(writeHosts.length >= 1, 'No write host found.');
 assert(readHosts.length >= 1, 'No read host found.');
 
+/**
+ * Replaces the `:<field>` in the query with the value corresponds in the value
+ * of `value` if it's an object.
+ *
+ * Ex.
+ * query: SELECT :val AS field
+ * values: { val: 1 }
+ *
+ * will be rewrite as,
+ * SELECT 1 AS field
+ *
+ * If the `values` is array, just reuse the mysql formatter.
+ *
+ * @param query
+ * @param values
+ * @returns {String}
+ */
+function queryFormat(query, values) {
+  if (!values) return query;
+  if (values instanceof Array) {
+    return SqlString.format(query, values, false, 'local');
+  }
+  return query.replace(/:(\w+)/g, (txt, key) => {
+    if (({}).hasOwnProperty.call(values, key)) {
+      return this.escape(values[key]);
+    }
+    return txt;
+  });
+}
+
 const config = {
+  queryFormat,
   connectionLimit: env.MYSQL_CONNECTION_LIMIT,
   user: env.MYSQL_USER,
   password: env.MYSQL_PASSWORD,
