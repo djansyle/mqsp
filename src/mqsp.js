@@ -166,6 +166,6 @@ export default class MQSP {
    * @returns {Promise.<void>}
    */
   async exec(qs, qa) {
-    await this.queryWrite(qs, qa);
+    return this.queryWrite(qs, qa);
   }
 }
