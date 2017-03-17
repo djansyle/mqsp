@@ -11,7 +11,7 @@ _bluebird2.default.promisifyAll([_Pool2.default, _Connection2.default]);
                                                                           * Environment Format
                                                                           * MYSQL_WRITE_HOST_0
                                                                           * MYSQL_READ_HOST_0
-                                                                          * MYSQL_DB
+                                                                          * MYSQL_DATABASE
                                                                           * MYSQL_USER
                                                                           * MYSQL_PASSWORD
                                                                           * MYSQL_CONNECTION_LIMIT
@@ -51,6 +51,7 @@ Object.keys(env).forEach(key => {
                                                                       * SELECT 1 AS field
                                                                       *
                                                                       * If the `values` is array, just reuse the mysql formatter.
+                                                                      *
                                                                       * @param query
                                                                       * @param values
                                                                       * @returns {String}
@@ -73,7 +74,7 @@ const config = {
   connectionLimit: env.MYSQL_CONNECTION_LIMIT,
   user: env.MYSQL_USER,
   password: env.MYSQL_PASSWORD,
-  database: env.MYSQL_DB };
+  database: env.MYSQL_DATABASE };
 
 
 function createPool(host) {
