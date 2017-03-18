@@ -1,4 +1,5 @@
 import test from 'ava';
+import times from 'lodash/times';
 
 let mqsp = null;
 test.before(() => {
@@ -33,4 +34,11 @@ test('getRows', async (t) => {
 test('query format', async (t) => {
   const res = await mqsp.getRow('SELECT :val AS field', { val: 1 });
   t.is(res.field, 1);
+});
+
+test('connection', async (t) => {
+  await Promise.all(times(parseInt(process.env.MYSQL_CONNECTION_LIMIT, 0) * 2)
+    .map(() => mqsp.exec('SELECT 1')));
+
+  t.pass();
 });

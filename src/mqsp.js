@@ -148,6 +148,8 @@ export default class MQSP {
       await this.benchHandler(qs, qa, ms);
     }
 
+    conn.release();
+
     return result;
   }
   /**

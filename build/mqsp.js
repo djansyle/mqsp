@@ -148,6 +148,8 @@ class MQSP {
         yield _this3.benchHandler(qs, qa, ms);
       }
 
+      conn.release();
+
       return result;})();
   }
   /**
