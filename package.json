@@ -1,6 +1,6 @@
 {
   "name": "mqsp",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "",
   "main": "build/index.js",
   "scripts": {
@@ -10,7 +10,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git@github.com:djansyle/rmq.git"
+    "url": "git@github.com:djansyle/mqsp.git"
   },
   "keywords": [
     "mysql",
