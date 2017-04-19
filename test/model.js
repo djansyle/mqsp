@@ -17,6 +17,12 @@ test.before(() => {
   mqsp = new MQSP(config);
 });
 
+test('Constructor', async (t) => {
+  const mqspTmp = new MQSP({ host: 'localhost', user: 'root', password: '', connectionLimit: 20 });
+  t.is(mqspTmp.writeHosts.indexOf('localhost'), 0);
+  t.is(mqspTmp.readHosts.indexOf('localhost'), 0);
+});
+
 test('exec', async () => {
   await mqsp.exec('SELECT 1;');
 });

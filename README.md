@@ -30,6 +30,16 @@ It also support object parsing(escaped) for your query.
   console.log(result);
   // [{ message: 'hello' }, { message: 'world' }];
 ```
+You can also pass a config like this, if your read and write hosts are the same.
+```javascript
+  const mysql = new MQSP({
+    user: 'root',
+    password: 'hardpassword',
+    database: 'db',
+    host: 'localhost'
+  })
+```
+Instead of adding them both to `writeHosts` and `readHosts` array.
 
 ## API
 ### Constructor

@@ -58,17 +58,32 @@ class MQSP {
     this.writeCounter = 0;
     this.readCounter = 0;
 
-    this.benchHandler = null;var _config$writeHosts =
+    this.benchHandler = null;const
 
-    config.writeHosts;const writeHosts = _config$writeHosts === undefined ? ['localhost'] : _config$writeHosts;var _config$readHosts = config.readHosts;const readHosts = _config$readHosts === undefined ? ['localhost'] : _config$readHosts;
+    host = config.host;var _config$writeHosts =
+    config.writeHosts;const writeHosts = _config$writeHosts === undefined ? [] : _config$writeHosts;var _config$readHosts = config.readHosts;const readHosts = _config$readHosts === undefined ? [] : _config$readHosts;
+
+    if (host && typeof host === 'string') {
+      if (writeHosts.length === 0) {
+        writeHosts.push('localhost');
+      }
+
+      if (readHosts.length === 0) {
+        readHosts.push('localhost');
+      }
+    }
+
     (0, _assert2.default)(writeHosts instanceof Array, 'Expecting property `writeHosts` to be an Array.');
     (0, _assert2.default)(readHosts instanceof Array, 'Expecting property `readHosts` to be an Array.');
 
     const sqlConfig = Object.assign({ queryFormat }, config);
     this.pools = {
-      write: writeHosts.map(host => createPool(host, sqlConfig)),
-      read: readHosts.map(host => createPool(host, sqlConfig)) };
+      write: writeHosts.map(uri => createPool(uri, sqlConfig)),
+      read: readHosts.map(uri => createPool(uri, sqlConfig)) };
 
+
+    this.writeHosts = writeHosts;
+    this.readHosts = readHosts;
 
     // For faster read.
     this.totalWrite = writeHosts.length;

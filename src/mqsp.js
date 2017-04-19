@@ -60,15 +60,30 @@ export default class MQSP {
 
     this.benchHandler = null;
 
-    const { writeHosts = ['localhost'], readHosts = ['localhost'] } = config;
+    const { host } = config;
+    const { writeHosts = [], readHosts = [] } = config;
+
+    if (host && typeof host === 'string') {
+      if (writeHosts.length === 0) {
+        writeHosts.push('localhost');
+      }
+
+      if (readHosts.length === 0) {
+        readHosts.push('localhost');
+      }
+    }
+
     assert(writeHosts instanceof Array, 'Expecting property `writeHosts` to be an Array.');
     assert(readHosts instanceof Array, 'Expecting property `readHosts` to be an Array.');
 
     const sqlConfig = Object.assign({ queryFormat }, config);
     this.pools = {
-      write: writeHosts.map(host => createPool(host, sqlConfig)),
-      read: readHosts.map(host => createPool(host, sqlConfig)),
+      write: writeHosts.map(uri => createPool(uri, sqlConfig)),
+      read: readHosts.map(uri => createPool(uri, sqlConfig)),
     };
+
+    this.writeHosts = writeHosts;
+    this.readHosts = readHosts;
 
     // For faster read.
     this.totalWrite = writeHosts.length;
