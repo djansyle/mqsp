@@ -7,37 +7,6 @@ import assert from 'assert';
 import SqlString from 'sqlstring';
 
 Promise.promisifyAll([Pool, Connection]);
-/**
- * Environment Format
- * MYSQL_WRITE_HOST_0
- * MYSQL_READ_HOST_0
- * MYSQL_DATABASE
- * MYSQL_USER
- * MYSQL_PASSWORD
- * MYSQL_CONNECTION_LIMIT
- */
-
-const { env } = process;
-
-// We will get all the keys that matches the host pattern
-const writeHosts = [];
-const readHosts = [];
-
-// Retrieve all the read and write host.
-Object.keys(env).forEach((key) => {
-  if (/MYSQL_WRITE_HOST_[0-9]{1,3}/g.test(key)) {
-    writeHosts.push(env[key]);
-    return;
-  }
-
-  if (/MYSQL_READ_HOST_[0-9]{1,3}/g.test(key)) {
-    readHosts.push(env[key]);
-  }
-});
-
-// Just make sure we both have write and read host.
-assert(writeHosts.length >= 1, 'No write host found.');
-assert(readHosts.length >= 1, 'No read host found.');
 
 /**
  * Replaces the `:<field>` in the query with the value corresponds in the value
@@ -69,26 +38,9 @@ function queryFormat(query, values) {
   });
 }
 
-const config = {
-  queryFormat,
-  connectionLimit: env.MYSQL_CONNECTION_LIMIT,
-  user: env.MYSQL_USER,
-  password: env.MYSQL_PASSWORD,
-  database: env.MYSQL_DATABASE,
-};
-
-function createPool(host) {
+function createPool(host, config) {
   return mysql.createPool(Object.assign({ host }, config));
 }
-
-const pools = {
-  write: writeHosts.map(createPool),
-  read: writeHosts.map(createPool),
-};
-
-// For faster read.
-const totalWrite = writeHosts.length;
-const totalRead = readHosts.length;
 
 const logger = {
   benchmark: debug('mqsp:info:benchmark'),
@@ -100,36 +52,54 @@ export default class MQSP {
   /**
    * MQSP Constructor
    * Initialize round robin counter for write and read.
+   * @param config
    */
-  constructor() {
+  constructor(config) {
     this.writeCounter = 0;
     this.readCounter = 0;
 
     this.benchHandler = null;
+
+    const { writeHosts = ['localhost'], readHosts = ['localhost'] } = config;
+    assert(writeHosts instanceof Array, 'Expecting property `writeHosts` to be an Array.');
+    assert(readHosts instanceof Array, 'Expecting property `readHosts` to be an Array.');
+
+    const sqlConfig = Object.assign({ queryFormat }, config);
+    this.pools = {
+      write: writeHosts.map(host => createPool(host, sqlConfig)),
+      read: readHosts.map(host => createPool(host, sqlConfig)),
+    };
+
+    // For faster read.
+    this.totalWrite = writeHosts.length;
+    this.totalRead = readHosts.length;
   }
 
   /**
    * Borrows a single connection on the read hosts,
    * which uses a round robin method.
+   * @access private
    * @returns {Promise.<Connection>}
    */
   async borrowRead() {
     this.readCounter += 1;
-    return pools.read[this.readCounter % totalRead].getConnectionAsync();
+    return this.pools.read[this.readCounter % this.totalRead].getConnectionAsync();
   }
 
   /**
    * Borrows a single connection on the write hosts,
    * which uses a round robin method.
+   * @access private
    * @returns {Promise.<Connection>}
    */
   async borrowWrite() {
     this.writeCounter += 1;
-    return pools.write[this.writeCounter % totalWrite].getConnectionAsync();
+    return this.pools.write[this.writeCounter % this.totalWrite].getConnectionAsync();
   }
 
   /**
    * Executes a query with a given connection.
+   * @access private
    * @param {String} qs
    * @param {Array} qa
    * @param {Connection} conn
@@ -154,6 +124,7 @@ export default class MQSP {
   }
   /**
    * Executes the query to a write host.
+   * @access private
    * @param {String} qs
    * @param {Array} qa
    * @returns {Promise.<Object>}
@@ -164,6 +135,7 @@ export default class MQSP {
 
   /**
    * Executes a query to a read host.
+   * @access private
    * @param {String} qs
    * @param {Array} qa
    * @returns {Promise.<Object>}

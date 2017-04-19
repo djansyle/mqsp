@@ -8,14 +8,24 @@
     "clean": "rm -rf build ",
     "build": "npm run clean && babel src --out-dir build"
   },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:djansyle/rmq.git"
+  },
+  "keywords": [
+    "mysql",
+    "es6",
+    "pool"
+  ],
   "author": "djansyle",
-  "license": "ISC",
+  "license": "MIT",
   "devDependencies": {
     "ava": "^0.18.2",
     "babel": "^6.23.0",
     "babel-cli": "^6.24.0",
     "babel-eslint": "^7.1.1",
     "babel-plugin-transform-async-to-generator": "^6.22.0",
+    "babel-plugin-transform-es2015-destructuring": "^6.23.0",
     "babel-plugin-transform-es2015-modules-commonjs": "^6.24.0",
     "eslint": "^3.17.1",
     "eslint-config-airbnb": "^14.1.0",

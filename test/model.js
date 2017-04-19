@@ -1,19 +1,20 @@
 import test from 'ava';
 import times from 'lodash/times';
 
-let mqsp = null;
-test.before(() => {
-  Object.assign(process.env, {
-    MYSQL_USER: 'root',
-    MYSQL_PASSWORD: '',
-    MYSQL_DATABASE: 'mysql',
-    MYSQL_CONNECTION_LIMIT: 20,
-    MYSQL_READ_HOST_0: 'localhost',
-    MYSQL_WRITE_HOST_0: 'localhost',
-  });
+import MQSP from './../src/index';
 
-  const MQSP = require('./../build/index').default; // eslint-disable-line
-  mqsp = new MQSP();
+let mqsp = null;
+
+const config = {
+  user: 'root',
+  password: '',
+  connectionLimit: 20,
+  writeHosts: ['localhost', 'localhost'],
+  readHosts: ['localhost', 'localhost'],
+};
+
+test.before(() => {
+  mqsp = new MQSP(config);
 });
 
 test('exec', async () => {
@@ -37,7 +38,7 @@ test('query format', async (t) => {
 });
 
 test('connection', async (t) => {
-  await Promise.all(times(parseInt(process.env.MYSQL_CONNECTION_LIMIT, 0) * 2)
+  await Promise.all(times(config.connectionLimit * 2)
     .map(() => mqsp.exec('SELECT 1')));
 
   t.pass();

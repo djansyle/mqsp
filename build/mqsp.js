@@ -7,55 +7,24 @@ var _assert = require('assert');var _assert2 = _interopRequireDefault(_assert);
 var _sqlstring = require('sqlstring');var _sqlstring2 = _interopRequireDefault(_sqlstring);function _interopRequireDefault(obj) {return obj && obj.__esModule ? obj : { default: obj };}function _asyncToGenerator(fn) {return function () {var gen = fn.apply(this, arguments);return new _bluebird2.default(function (resolve, reject) {function step(key, arg) {try {var info = gen[key](arg);var value = info.value;} catch (error) {reject(error);return;}if (info.done) {resolve(value);} else {return _bluebird2.default.resolve(value).then(function (value) {step("next", value);}, function (err) {step("throw", err);});}}return step("next");});};}
 
 _bluebird2.default.promisifyAll([_Pool2.default, _Connection2.default]);
+
 /**
-                                                                          * Environment Format
-                                                                          * MYSQL_WRITE_HOST_0
-                                                                          * MYSQL_READ_HOST_0
-                                                                          * MYSQL_DATABASE
-                                                                          * MYSQL_USER
-                                                                          * MYSQL_PASSWORD
-                                                                          * MYSQL_CONNECTION_LIMIT
+                                                                          * Replaces the `:<field>` in the query with the value corresponds in the value
+                                                                          * of `value` if it's an object.
+                                                                          *
+                                                                          * Ex.
+                                                                          * query: SELECT :val AS field
+                                                                          * values: { val: 1 }
+                                                                          *
+                                                                          * will be rewrite as,
+                                                                          * SELECT 1 AS field
+                                                                          *
+                                                                          * If the `values` is array, just reuse the mysql formatter.
+                                                                          *
+                                                                          * @param query
+                                                                          * @param values
+                                                                          * @returns {String}
                                                                           */
-
-const { env } = process;
-
-// We will get all the keys that matches the host pattern
-const writeHosts = [];
-const readHosts = [];
-
-// Retrieve all the read and write host.
-Object.keys(env).forEach(key => {
-  if (/MYSQL_WRITE_HOST_[0-9]{1,3}/g.test(key)) {
-    writeHosts.push(env[key]);
-    return;
-  }
-
-  if (/MYSQL_READ_HOST_[0-9]{1,3}/g.test(key)) {
-    readHosts.push(env[key]);
-  }
-});
-
-// Just make sure we both have write and read host.
-(0, _assert2.default)(writeHosts.length >= 1, 'No write host found.');
-(0, _assert2.default)(readHosts.length >= 1, 'No read host found.');
-
-/**
-                                                                      * Replaces the `:<field>` in the query with the value corresponds in the value
-                                                                      * of `value` if it's an object.
-                                                                      *
-                                                                      * Ex.
-                                                                      * query: SELECT :val AS field
-                                                                      * values: { val: 1 }
-                                                                      *
-                                                                      * will be rewrite as,
-                                                                      * SELECT 1 AS field
-                                                                      *
-                                                                      * If the `values` is array, just reuse the mysql formatter.
-                                                                      *
-                                                                      * @param query
-                                                                      * @param values
-                                                                      * @returns {String}
-                                                                      */
 function queryFormat(query, values) {
   if (!values) return query;
   if (values instanceof Array) {
@@ -69,26 +38,9 @@ function queryFormat(query, values) {
   });
 }
 
-const config = {
-  queryFormat,
-  connectionLimit: env.MYSQL_CONNECTION_LIMIT,
-  user: env.MYSQL_USER,
-  password: env.MYSQL_PASSWORD,
-  database: env.MYSQL_DATABASE };
-
-
-function createPool(host) {
+function createPool(host, config) {
   return _mysql2.default.createPool(Object.assign({ host }, config));
 }
-
-const pools = {
-  write: writeHosts.map(createPool),
-  read: writeHosts.map(createPool) };
-
-
-// For faster read.
-const totalWrite = writeHosts.length;
-const totalRead = readHosts.length;
 
 const logger = {
   benchmark: (0, _debug2.default)('mqsp:info:benchmark'),
@@ -100,36 +52,54 @@ class MQSP {
   /**
              * MQSP Constructor
              * Initialize round robin counter for write and read.
+             * @param config
              */
-  constructor() {
+  constructor(config) {
     this.writeCounter = 0;
     this.readCounter = 0;
 
-    this.benchHandler = null;
+    this.benchHandler = null;var _config$writeHosts =
+
+    config.writeHosts;const writeHosts = _config$writeHosts === undefined ? ['localhost'] : _config$writeHosts;var _config$readHosts = config.readHosts;const readHosts = _config$readHosts === undefined ? ['localhost'] : _config$readHosts;
+    (0, _assert2.default)(writeHosts instanceof Array, 'Expecting property `writeHosts` to be an Array.');
+    (0, _assert2.default)(readHosts instanceof Array, 'Expecting property `readHosts` to be an Array.');
+
+    const sqlConfig = Object.assign({ queryFormat }, config);
+    this.pools = {
+      write: writeHosts.map(host => createPool(host, sqlConfig)),
+      read: readHosts.map(host => createPool(host, sqlConfig)) };
+
+
+    // For faster read.
+    this.totalWrite = writeHosts.length;
+    this.totalRead = readHosts.length;
   }
 
   /**
      * Borrows a single connection on the read hosts,
      * which uses a round robin method.
+     * @access private
      * @returns {Promise.<Connection>}
      */
   borrowRead() {var _this = this;return _asyncToGenerator(function* () {
       _this.readCounter += 1;
-      return pools.read[_this.readCounter % totalRead].getConnectionAsync();})();
+      return _this.pools.read[_this.readCounter % _this.totalRead].getConnectionAsync();})();
   }
 
   /**
      * Borrows a single connection on the write hosts,
      * which uses a round robin method.
+     * @access private
      * @returns {Promise.<Connection>}
      */
   borrowWrite() {var _this2 = this;return _asyncToGenerator(function* () {
       _this2.writeCounter += 1;
-      return pools.write[_this2.writeCounter % totalWrite].getConnectionAsync();})();
+      return _this2.pools.write[_this2.writeCounter % _this2.totalWrite].getConnectionAsync();})();
   }
 
   /**
      * Executes a query with a given connection.
+     * @access private
      * @param {String} qs
      * @param {Array} qa
      * @param {Connection} conn
@@ -154,6 +124,7 @@ class MQSP {
   }
   /**
      * Executes the query to a write host.
+     * @access private
      * @param {String} qs
      * @param {Array} qa
      * @returns {Promise.<Object>}
@@ -164,6 +135,7 @@ class MQSP {
 
   /**
      * Executes a query to a read host.
+     * @access private
      * @param {String} qs
      * @param {Array} qa
      * @returns {Promise.<Object>}
