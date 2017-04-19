@@ -58,23 +58,24 @@ class MQSP {
     this.writeCounter = 0;
     this.readCounter = 0;
 
-    this.benchHandler = null;const
+    this.benchHandler = null;var _config$host =
 
-    host = config.host;var _config$writeHosts =
+    config.host;const host = _config$host === undefined ? 'localhost' : _config$host;var _config$writeHosts =
     config.writeHosts;const writeHosts = _config$writeHosts === undefined ? [] : _config$writeHosts;var _config$readHosts = config.readHosts;const readHosts = _config$readHosts === undefined ? [] : _config$readHosts;
-
-    if (host && typeof host === 'string') {
-      if (writeHosts.length === 0) {
-        writeHosts.push('localhost');
-      }
-
-      if (readHosts.length === 0) {
-        readHosts.push('localhost');
-      }
-    }
 
     (0, _assert2.default)(writeHosts instanceof Array, 'Expecting property `writeHosts` to be an Array.');
     (0, _assert2.default)(readHosts instanceof Array, 'Expecting property `readHosts` to be an Array.');
+
+    if (writeHosts.length === 0) {
+      writeHosts.push(host);
+    }
+
+    if (readHosts.length === 0) {
+      readHosts.push(host);
+    }
+
+    (0, _assert2.default)(writeHosts.length >= 1, 'Did not find any write host.');
+    (0, _assert2.default)(readHosts.length >= 1, 'Did not find any read host.');
 
     const sqlConfig = Object.assign({ queryFormat }, config);
     this.pools = {

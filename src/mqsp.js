@@ -60,21 +60,22 @@ export default class MQSP {
 
     this.benchHandler = null;
 
-    const { host } = config;
+    const { host = 'localhost' } = config;
     const { writeHosts = [], readHosts = [] } = config;
-
-    if (host && typeof host === 'string') {
-      if (writeHosts.length === 0) {
-        writeHosts.push('localhost');
-      }
-
-      if (readHosts.length === 0) {
-        readHosts.push('localhost');
-      }
-    }
 
     assert(writeHosts instanceof Array, 'Expecting property `writeHosts` to be an Array.');
     assert(readHosts instanceof Array, 'Expecting property `readHosts` to be an Array.');
+
+    if (writeHosts.length === 0) {
+      writeHosts.push(host);
+    }
+
+    if (readHosts.length === 0) {
+      readHosts.push(host);
+    }
+
+    assert(writeHosts.length >= 1, 'Did not find any write host.');
+    assert(readHosts.length >= 1, 'Did not find any read host.');
 
     const sqlConfig = Object.assign({ queryFormat }, config);
     this.pools = {

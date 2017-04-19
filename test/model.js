@@ -21,6 +21,13 @@ test('Constructor', async (t) => {
   const mqspTmp = new MQSP({ host: 'localhost', user: 'root', password: '', connectionLimit: 20 });
   t.is(mqspTmp.writeHosts.indexOf('localhost'), 0);
   t.is(mqspTmp.readHosts.indexOf('localhost'), 0);
+
+  const res = await mqspTmp.getRow('SELECT 1 AS reply');
+  t.is(res.reply, 1);
+
+  const instance = new MQSP({});
+  t.is(instance.writeHosts.indexOf('localhost'), 0);
+  t.is(instance.readHosts.indexOf('localhost'), 0);
 });
 
 test('exec', async () => {
