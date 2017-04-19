@@ -188,4 +188,18 @@ class MQSP {
      */
   exec(qs, qa) {var _this8 = this;return _asyncToGenerator(function* () {
       return _this8.queryWrite(qs, qa);})();
+  }
+
+  /**
+     * Determines whether the given query exists or not.
+     * @param qs
+     * @param qa
+     * @returns {Promise.<boolean>}
+     */
+  exists(qs, qa) {var _this9 = this;return _asyncToGenerator(function* () {
+      // Remove the added semi-colon if ever there is.
+      const result = yield _this9.getRow(
+      `SELECT EXISTS(${qs.split(';')[0]}) AS exist;`, qa);
+
+      return !!result.exist;})();
   }}exports.default = MQSP;

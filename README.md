@@ -48,6 +48,7 @@ of the library `mysql`. Only that, the host is being replaced with the values un
 the `writeHosts` and `readHosts`.
 
 ### Query single row (read)
+Get a single row, of the query.
 ```javascript
   const row = await mqsp.getRow('SELECT * FROM users');
   // `row` will contain an Object(not an Array) of the user.
@@ -55,12 +56,26 @@ the `writeHosts` and `readHosts`.
 ```
 
 ### Query multiple row (read)
+Gets all the rows based on the query.
 ```javascript
   const rows = await mqsp.getRows('SELECT * FROM users');
   // `rows` will contain an Array of Object of the user.
 ```
 
+### Exists (read)
+Determines whether the query does return a value.
+```javascript
+    let res = await mqsp.exists('SELECT 1');
+    console.log(res);
+    // true
+
+    res = await mqsp.exists('SELECT 1 FROM (SELECT 1) AS tmp WHERE 1 = 0');
+    console.log(res);
+    // false
+```
+
 ### Exec (write)
+Executes the query and give the query result. Suggested not to use this for select statements or any other read operation.
 ```javascript
   const result = await mqsp.exec('INSERT INTO users(id, username) VALUES (:id, :username)', { id: 482, username: 'John Doe'});
   // `result` will contain the same object when you call `mysql.query`.

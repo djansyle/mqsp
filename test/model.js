@@ -43,6 +43,14 @@ test('query format', async (t) => {
   t.is(res.field, 1);
 });
 
+test('exists', async (t) => {
+  let res = await mqsp.exists('SELECT 1');
+  t.is(res, true);
+
+  res = await mqsp.exists('SELECT 1 FROM (SELECT 1) AS tmp WHERE 1 = 0');
+  t.is(res, false);
+});
+
 test('connection', async (t) => {
   await Promise.all(times(config.connectionLimit * 2)
     .map(() => mqsp.exec('SELECT 1')));

@@ -189,4 +189,18 @@ export default class MQSP {
   async exec(qs, qa) {
     return this.queryWrite(qs, qa);
   }
+
+  /**
+   * Determines whether the given query exists or not.
+   * @param qs
+   * @param qa
+   * @returns {Promise.<boolean>}
+   */
+  async exists(qs, qa) {
+    // Remove the added semi-colon if ever there is.
+    const result = await this.getRow(
+      `SELECT EXISTS(${qs.split(';')[0]}) AS exist;`, qa,
+    );
+    return !!result.exist;
+  }
 }
