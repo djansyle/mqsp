@@ -46,8 +46,9 @@ test('getRows', async (t) => {
 });
 
 test('query format', async (t) => {
-  const res = await mqsp.getRow('SELECT :val AS field', { val: 1 });
+  const res = await mqsp.getRow('SELECT :val AS field, :noVal AS field2', { val: 1 });
   t.is(res.field, 1);
+  t.is(res.field2, null);
 });
 
 test('exists', async (t) => {

@@ -34,7 +34,7 @@ function queryFormat(query, values) {
     if (({}).hasOwnProperty.call(values, key)) {
       return this.escape(values[key]);
     }
-    return txt;
+    return 'NULL';
   });
 }
 

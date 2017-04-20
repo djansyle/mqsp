@@ -1,13 +1,17 @@
 # MQSP
 
 MQSP is a tool for mysql that supports for multiple read and write replica.
-It also support object parsing(escaped) for your query.
+It also support object parsing(escaped) for your query. Any property that is
+not mapped in the query will have a default value of `NULL`.
 
 ```javascript
   import MQSP from 'mqsp';
 
-  const result = await mqsp.exec('SELECT :message AS message', { message: 'hello' });
-  // query will be translated to `SELECT 'hello' AS message`.
+  const result = await mqsp.exec(`
+    SELECT :message AS message, :nonExist AS val
+  `, { message: 'hello' });
+  console.log(result);
+  // { message: 'hello', val: null }
 ```
 
 ## Quickstart
