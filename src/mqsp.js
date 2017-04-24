@@ -42,6 +42,22 @@ function createPool(host, config) {
   return mysql.createPool(Object.assign({ host }, config));
 }
 
+function twoDigits(d) {
+  if (d >= 0 && d < 10) {
+    return `0${d.toString()}`;
+  }
+
+  if (d > -10 && d < 0) {
+    return `-0${(-1 * d).toString()}`;
+  }
+
+  return d.toString();
+}
+
+function formatDate(year, month, day, hour, minute, second, ms = '000') {
+  return `${year}-${month}-${day} ${hour}:${minute}:${second}.${ms}`;
+}
+
 const logger = {
   benchmark: debug('mqsp:info:benchmark'),
   info: debug('mqsp:info'),
@@ -203,5 +219,28 @@ export default class MQSP {
       `SELECT EXISTS(${qs.split(';')[0]}) AS exist;`, qa,
     );
     return !!result.exist;
+  }
+
+  /**
+   * Formats the given Date to MySQL Timestamp.
+   * Sample output:
+   * 2011-10-05 14:48:00.000
+   *
+   * @param {Date} date
+   * @param {Boolean} [excludeMs]
+   * @returns {String}
+   */
+  static toTimestamp(date, excludeMs = false) {
+    const args = [
+      date.getFullYear(),
+      date.getMonth() + 1,
+      date.getDate(),
+      date.getHours(),
+      date.getMinutes(),
+      date.getSeconds(),
+      excludeMs ? 0 : date.getMilliseconds(),
+    ];
+
+    return formatDate(...args.map(value => twoDigits(value)));
   }
 }

@@ -65,3 +65,15 @@ test('connection', async (t) => {
 
   t.pass();
 });
+
+test('toTimestamp: excludeMs = true', (t) => {
+  const date = new Date('2017-07-07 07:07:07.777');
+  const timestamp = MQSP.toTimestamp(date, true);
+  t.is(timestamp, '2017-07-07 07:07:07.00');
+});
+
+test('toTimestamp: excludeMS = false', (t) => {
+  const date = new Date('2017-07-07 07:07:07.777');
+  const timestamp = MQSP.toTimestamp(date, false);
+  t.is(timestamp, '2017-07-07 07:07:07.777');
+});
