@@ -84,3 +84,14 @@ Executes the query and give the query result. Suggested not to use this for sele
   const result = await mqsp.exec('INSERT INTO users(id, username) VALUES (:id, :username)', { id: 482, username: 'John Doe'});
   // `result` will contain the same object when you call `mysql.query`.
 ```
+
+## Utilities
+### toTimestamp(date, [excludeMs = true])
+Converts the javascript date object to MySQL Timestamp format.
+
+```javascript
+  const date = new Date(const date = new Date('2017-07-07 07:07:07.777');
+  const timestamp = MQSP.toTimestamp(date, true);
+  console.log(timestamp);
+  // 2017-07-07 07:07:07.00
+```
