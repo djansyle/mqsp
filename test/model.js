@@ -81,3 +81,9 @@ test('toTimestamp: excludeMS = false', (t) => {
 test('throw', async (t) => {
   await t.throws(mqsp.exec('SELECT invalidQuery'));
 });
+
+test('escape', async (t) => {
+  const res = await mqsp.exec(`SELECT ${mqsp.escape(';;DROP mysql')} AS val`);
+  t.is(res.affectedRows, undefined);
+  t.is(res[0].val, ';;DROP mysql');
+});

@@ -105,6 +105,9 @@ export default class MQSP {
     // For faster read.
     this.totalWrite = writeHosts.length;
     this.totalRead = readHosts.length;
+
+    // Expose escape
+    this.escape = mysql.escape;
   }
 
   /**

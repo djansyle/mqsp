@@ -95,3 +95,14 @@ Converts the javascript date object to MySQL Timestamp format.
   console.log(timestamp);
   // 2017-07-07 07:07:07.00
 ```
+### escape(val)
+Escapes the value to prevent sql injection.
+```javascript
+  const res = await mqsp.exec(`SELECT ${mqsp.escape(';;DROP mysql;')} AS val`);
+  console.log(res.affectedRows);
+  console.log(res[0]);
+  // undefined
+  // RowDataPacket {
+  //   val: ";;DROP mysql;",
+  // }
+```
