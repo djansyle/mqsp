@@ -47,6 +47,8 @@ You can also pass a config like this, if your read and write hosts are the same.
 Instead of adding them both to `writeHosts` and `readHosts` array.
 
 ## Caching
+Read operations are being cached with a max age of 5 minutes.
+
 ```javascript
   const res = await mqsp.getRow('SELECT DATE_ADD(NOW(6), INTERVAL :ms MICROSECOND)', { ms: 777 });
   await Promise.delay(10);
