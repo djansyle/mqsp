@@ -5,6 +5,9 @@ import Promise from 'bluebird';
 import debug from 'debug';
 import assert from 'assert';
 import SqlString from 'sqlstring';
+import objectHash from 'object-hash';
+import stringHash from 'string-hash';
+import LRU from 'lru-cache';
 
 Promise.promisifyAll([Pool, Connection]);
 
@@ -64,6 +67,10 @@ const logger = {
   verbose: debug('mqsp:verbose'),
 };
 
+function hashPair(qs, qa = {}) {
+  return stringHash(`${stringHash(qs)}${stringHash(objectHash(qa))}`);
+}
+
 export default class MQSP {
   /**
    * MQSP Constructor
@@ -78,6 +85,7 @@ export default class MQSP {
 
     const { host = 'localhost' } = config;
     const { writeHosts = [], readHosts = [] } = config;
+    const { cache = { maxAge: 1000 * 60 * 10 } } = config;
 
     assert(writeHosts instanceof Array, 'Expecting property `writeHosts` to be an Array.');
     assert(readHosts instanceof Array, 'Expecting property `readHosts` to be an Array.');
@@ -108,6 +116,7 @@ export default class MQSP {
 
     // Expose escape
     this.escape = mysql.escape;
+    this.cache = new LRU(cache);
   }
 
   /**
@@ -162,6 +171,25 @@ export default class MQSP {
 
     return result;
   }
+
+  /**
+   * Stores the query result with the `qa` and `qs` pair.
+   * @param qs
+   * @param qa
+   * @returns {Promise.<void>}
+   */
+  async cacheableRead(qs, qa) {
+    const key = hashPair(qs, qa);
+    let data = this.cache.get(key);
+
+    if (!data) {
+      data = await this.queryRead(qs, qa);
+      this.cache.set(key, data);
+    }
+
+    return data;
+  }
+
   /**
    * Executes the query to a write host.
    * @access private
@@ -192,7 +220,7 @@ export default class MQSP {
    * @returns {Promise.<Array>}
    */
   async getRows(qs, qa) {
-    return this.queryRead(qs, qa);
+    return this.cacheableRead(qs, qa);
   }
 
   /**
@@ -202,7 +230,7 @@ export default class MQSP {
    * @returns {Promise.<Object|undefined>}
    */
   async getRow(qs, qa) {
-    return (await this.queryRead(qs, qa))[0];
+    return (await this.cacheableRead(qs, qa))[0];
   }
 
   /**

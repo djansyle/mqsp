@@ -2,7 +2,8 @@
   "plugins": [
     "transform-es2015-modules-commonjs",
     "transform-async-to-generator",
-    "transform-es2015-destructuring"
+    "transform-es2015-destructuring",
+    "transform-object-rest-spread"
   ],
   "retainLines": true
 }

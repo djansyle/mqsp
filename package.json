@@ -1,6 +1,6 @@
 {
   "name": "mqsp",
-  "version": "0.1.3",
+  "version": "0.2.0",
   "description": "",
   "main": "build/index.js",
   "scripts": {
@@ -16,7 +16,8 @@
   "keywords": [
     "mysql",
     "es6",
-    "pool"
+    "pool",
+    "cache"
   ],
   "author": "djansyle",
   "license": "MIT",
@@ -28,6 +29,7 @@
     "babel-plugin-transform-async-to-generator": "^6.22.0",
     "babel-plugin-transform-es2015-destructuring": "^6.23.0",
     "babel-plugin-transform-es2015-modules-commonjs": "^6.24.0",
+    "babel-plugin-transform-object-rest-spread": "^6.23.0",
     "eslint": "^3.17.1",
     "eslint-config-airbnb": "^14.1.0",
     "eslint-plugin-babel": "^4.1.1",
@@ -40,8 +42,11 @@
     "bluebird": "^3.5.0",
     "debug": "^2.6.3",
     "lodash": "^4.17.4",
+    "lru-cache": "^4.0.2",
     "mysql": "^2.13.0",
-    "sqlstring": "^2.2.0"
+    "object-hash": "^1.1.8",
+    "sqlstring": "^2.2.0",
+    "string-hash": "^1.1.3"
   },
   "ava": {
     "files": [

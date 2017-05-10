@@ -1,6 +1,6 @@
 import test from 'ava';
 import times from 'lodash/times';
-
+import Promise from 'bluebird';
 import MQSP from './../src/index';
 
 let mqsp = null;
@@ -86,4 +86,11 @@ test('escape', async (t) => {
   const res = await mqsp.exec(`SELECT ${mqsp.escape(';;DROP mysql')} AS val`);
   t.is(res.affectedRows, undefined);
   t.is(res[0].val, ';;DROP mysql');
+});
+
+test('cache', async (t) => {
+  const res = await mqsp.getRow('SELECT DATE_ADD(NOW(6), INTERVAL :ms MICROSECOND)', { ms: 777 });
+  await Promise.delay(10);
+  const cached = await mqsp.getRow('SELECT DATE_ADD(NOW(6), INTERVAL :ms MICROSECOND)', { ms: 777 });
+  t.deepEqual(res, cached);
 });

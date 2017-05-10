@@ -1,12 +1,13 @@
 # MQSP
 
 MQSP is a tool for mysql that supports for multiple read and write replica.
-It also support object parsing(escaped) for your query. Any property that is
-not mapped in the query will have a default value of `NULL`.
+It also support object parsing(escaped) for your query, and result caching.
+Any property that is not mapped in the query will have a default value of `NULL`.
 
 ```javascript
   import MQSP from 'mqsp';
 
+  const mqsp = new MQSP();
   const result = await mqsp.exec(`
     SELECT :message AS message, :nonExist AS val
   `, { message: 'hello' });
@@ -44,6 +45,14 @@ You can also pass a config like this, if your read and write hosts are the same.
   })
 ```
 Instead of adding them both to `writeHosts` and `readHosts` array.
+
+## Caching
+```javascript
+  const res = await mqsp.getRow('SELECT DATE_ADD(NOW(6), INTERVAL :ms MICROSECOND)', { ms: 777 });
+  await Promise.delay(10);
+  const cached = await mqsp.getRow('SELECT DATE_ADD(NOW(6), INTERVAL :ms MICROSECOND)', { ms: 777 });
+  assert.deepEqual(res, cached);
+```
 
 ## API
 ### Constructor
