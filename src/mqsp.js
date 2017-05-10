@@ -140,17 +140,22 @@ export default class MQSP {
   async query(qs, qa, conn) {
     logger.verbose({ qs, qa });
 
-    const start = new Date();
-    const result = await conn.queryAsync(qs, qa);
-    const end = new Date();
-    const ms = end.getTime() - start.getTime();
+    let result = null;
+    try {
+      const start = new Date();
+      result = await conn.queryAsync(qs, qa);
+      const end = new Date();
+      const ms = end.getTime() - start.getTime();
 
-    logger.benchmark({ qs, qa, ms });
-    if (this.benchHandler) {
-      await this.benchHandler(qs, qa, ms);
+      logger.benchmark({ qs, qa, ms });
+      if (this.benchHandler) {
+        await this.benchHandler(qs, qa, ms);
+      }
+    } catch (e) {
+      throw e;
+    } finally {
+      conn.release();
     }
-
-    conn.release();
 
     return result;
   }

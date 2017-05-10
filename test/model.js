@@ -9,8 +9,8 @@ const config = {
   user: 'root',
   password: '',
   connectionLimit: 20,
-  writeHosts: ['localhost', 'localhost'],
-  readHosts: ['localhost', 'localhost'],
+  writeHosts: ['172.20.0.2', '172.20.0.2'],
+  readHosts: ['172.20.0.2', '172.20.0.2'],
 };
 
 test.before(() => {
@@ -18,9 +18,9 @@ test.before(() => {
 });
 
 test('Constructor', async (t) => {
-  const mqspTmp = new MQSP({ host: 'localhost', user: 'root', password: '', connectionLimit: 20 });
-  t.is(mqspTmp.writeHosts.indexOf('localhost'), 0);
-  t.is(mqspTmp.readHosts.indexOf('localhost'), 0);
+  const mqspTmp = new MQSP({ host: '172.20.0.2', user: 'root', password: '', connectionLimit: 20 });
+  t.is(mqspTmp.writeHosts.indexOf('172.20.0.2'), 0);
+  t.is(mqspTmp.readHosts.indexOf('172.20.0.2'), 0);
 
   const res = await mqspTmp.getRow('SELECT 1 AS reply');
   t.is(res.reply, 1);
@@ -76,4 +76,8 @@ test('toTimestamp: excludeMS = false', (t) => {
   const date = new Date('2017-07-07 07:07:07.777');
   const timestamp = MQSP.toTimestamp(date, false);
   t.is(timestamp, '2017-07-07 07:07:07.777');
+});
+
+test('throw', async (t) => {
+  await t.throws(mqsp.exec('SELECT invalidQuery'));
 });

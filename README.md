@@ -90,7 +90,7 @@ Executes the query and give the query result. Suggested not to use this for sele
 Converts the javascript date object to MySQL Timestamp format.
 
 ```javascript
-  const date = new Date(const date = new Date('2017-07-07 07:07:07.777');
+  const date = new Date('2017-07-07 07:07:07.777');
   const timestamp = MQSP.toTimestamp(date, true);
   console.log(timestamp);
   // 2017-07-07 07:07:07.00
