@@ -1,6 +1,6 @@
 {
   "name": "mqsp",
-  "version": "0.2.3",
+  "version": "0.2.6",
   "description": "",
   "main": "build/index.js",
   "scripts": {
