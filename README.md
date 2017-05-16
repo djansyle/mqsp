@@ -96,6 +96,14 @@ Executes the query and give the query result. Suggested not to use this for sele
   // `result` will contain the same object when you call `mysql.query`.
 ```
 
+### Close
+Closes the read and write connection pool
+```javascript
+  await mqsp.close();
+  await mqsp.getRow('SELECT 1');
+  // Will throw an error
+```
+
 ## Utilities
 ### toTimestamp(date, [excludeMs = true])
 Converts the javascript date object to MySQL Timestamp format.
