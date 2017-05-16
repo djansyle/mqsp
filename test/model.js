@@ -9,8 +9,8 @@ const config = {
   user: 'root',
   password: '',
   connectionLimit: 20,
-  writeHosts: ['172.20.0.2', '172.20.0.2'],
-  readHosts: ['172.20.0.2', '172.20.0.2'],
+  writeHosts: ['localhost', 'localhost'],
+  readHosts: ['localhost', 'localhost'],
 };
 
 test.before(() => {
@@ -18,9 +18,9 @@ test.before(() => {
 });
 
 test('Constructor', async (t) => {
-  const mqspTmp = new MQSP({ host: '172.20.0.2', user: 'root', password: '', connectionLimit: 20 });
-  t.is(mqspTmp.writeHosts.indexOf('172.20.0.2'), 0);
-  t.is(mqspTmp.readHosts.indexOf('172.20.0.2'), 0);
+  const mqspTmp = new MQSP({ host: 'localhost', user: 'root', password: '', connectionLimit: 20 });
+  t.is(mqspTmp.writeHosts.indexOf('localhost'), 0);
+  t.is(mqspTmp.readHosts.indexOf('localhost'), 0);
 
   const res = await mqspTmp.getRow('SELECT 1 AS reply');
   t.is(res.reply, 1);
@@ -93,4 +93,12 @@ test('cache', async (t) => {
   await Promise.delay(10);
   const cached = await mqsp.getRow('SELECT DATE_ADD(NOW(6), INTERVAL :ms MICROSECOND)', { ms: 777 });
   t.deepEqual(res, cached);
+});
+
+test('cache: disable caching', async (t) => {
+  const instance = new MQSP({ ...config, disableCache: true });
+  const res = await instance.getRow('SELECT DATE_ADD(NOW(6), INTERVAL :ms MICROSECOND)', { ms: 777 });
+  await Promise.delay(10);
+  const cached = await instance.getRow('SELECT DATE_ADD(NOW(6), INTERVAL :ms MICROSECOND)', { ms: 777 });
+  t.notDeepEqual(res, cached);
 });
