@@ -85,7 +85,7 @@ export default class MQSP {
 
     const { host = 'localhost' } = config;
     const { writeHosts = [], readHosts = [] } = config;
-    const { cache = { maxAge: 1000 * 60 * 10 } } = config;
+    const { cache = { maxAge: 1000 * 60 * 10 }, disableCache } = config;
 
     assert(writeHosts instanceof Array, 'Expecting property `writeHosts` to be an Array.');
     assert(readHosts instanceof Array, 'Expecting property `readHosts` to be an Array.');
@@ -116,7 +116,9 @@ export default class MQSP {
 
     // Expose escape
     this.escape = mysql.escape;
-    this.cache = new LRU(cache);
+    if (!disableCache) {
+      this.cache = new LRU(cache);
+    }
   }
 
   /**
@@ -179,6 +181,10 @@ export default class MQSP {
    * @returns {Promise.<void>}
    */
   async cacheableRead(qs, qa) {
+    if (!this.cache) {
+      return this.queryRead(qs, qa);
+    }
+
     const key = hashPair(qs, qa);
     let data = this.cache.get(key);
 
@@ -278,5 +284,10 @@ export default class MQSP {
     ];
 
     return formatDate(...args.map(value => twoDigits(value)));
+  }
+
+  close() {
+    this.pools.read.close();
+    this.pools.write.close();
   }
 }

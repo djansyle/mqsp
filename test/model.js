@@ -102,3 +102,8 @@ test('cache: disable caching', async (t) => {
   const cached = await instance.getRow('SELECT DATE_ADD(NOW(6), INTERVAL :ms MICROSECOND)', { ms: 777 });
   t.notDeepEqual(res, cached);
 });
+
+test('close', async (t) => {
+  const instance = new MQSP(config);
+  instance.close();
+});
