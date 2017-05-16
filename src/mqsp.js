@@ -286,8 +286,10 @@ export default class MQSP {
     return formatDate(...args.map(value => twoDigits(value)));
   }
 
-  close() {
-    this.pools.read.close();
-    this.pools.write.close();
+  async close() {
+    await Promise.all([
+      this.pools.read.forEach(conn => conn.endAsync()),
+      this.pools.write.forEach(conn => conn.endAsync()),
+    ]);
   }
 }

@@ -105,5 +105,6 @@ test('cache: disable caching', async (t) => {
 
 test('close', async (t) => {
   const instance = new MQSP(config);
-  instance.close();
+  await instance.close();
+  await t.throws(instance.getRow('SELECT 1'));
 });
