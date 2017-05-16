@@ -1,8 +1,10 @@
 # MQSP
-
 MQSP is a tool for mysql that supports for multiple read and write replica.
 It also support object parsing(escaped) for your query, and result caching.
 Any property that is not mapped in the query will have a default value of `NULL`.
+
+[![NPM](https://nodei.co/npm/mqsp.png?downloads=true&downloadRank=true&stars=true)](https://www.npmjs.com/package/mqsp)
+[![CircleCI](https://img.shields.io/circleci/project/github/djansyle/mqsp.svg?style=flat-square)](https://circleci.com/gh/djansyle/mqsp)
 
 ```javascript
   import MQSP from 'mqsp';

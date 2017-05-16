@@ -1,3 +1,9 @@
+machine:
+  node:
+    version: 6.10.2
+dependencies:
+  cache_directories:
+    - node_modules
 test:
   override:
     - npm run lint
