@@ -58,6 +58,16 @@ Read operations are being cached with a max age of 5 minutes.
   assert.deepEqual(res, cached);
 ```
 
+## Transaction
+MQSP supports mysql transaction.
+
+```javascript
+  const transaction = mqsp.getTransaction();
+  await transaction.beginTransaction();
+  await transaction.exec('UPDATE users SET username = 'djansyle' WHERE id = 1');
+  await transaction.commit();
+```
+
 ## API
 ### Constructor
 Creates a pool of the given config. The config is passed to the `createPool` function
@@ -98,12 +108,14 @@ Executes the query and give the query result. Suggested not to use this for sele
   // `result` will contain the same object when you call `mysql.query`.
 ```
 
-### Close
-Closes the read and write connection pool
+### Get Transaction
+Retrieve a transaction from an mqsp instance. Transaction API is the same with MQSP API, only
+is that under utilities is not included.
 ```javascript
-  await mqsp.close();
-  await mqsp.getRow('SELECT 1');
-  // Will throw an error
+    const transaction = mqsp.getTransaction();
+    await transaction.beginTransaction();
+    await transaction.exec('UPDATE users SET username = 'djansyle' WHERE id = 1');
+    await transaction.commit();
 ```
 
 ## Utilities
@@ -126,4 +138,12 @@ Escapes the value to prevent sql injection.
   // RowDataPacket {
   //   val: ";;DROP mysql;",
   // }
+```
+
+### Close
+Closes the read and write connection pool
+```javascript
+  await mqsp.close();
+  await mqsp.getRow('SELECT 1');
+  // Will throw an error
 ```

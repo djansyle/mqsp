@@ -1,6 +1,6 @@
 {
   "name": "mqsp",
-  "version": "0.2.6",
+  "version": "0.3.0",
   "description": "",
   "main": "build/index.js",
   "scripts": {
@@ -8,7 +8,7 @@
     "clean": "rm -rf build ",
     "build": "npm run clean && babel src --out-dir build",
     "lint": "eslint src/ test/",
-    "postinstall": "npm run build"
+    "prepublish": "npm run build"
   },
   "repository": {
     "type": "git",
@@ -18,7 +18,8 @@
     "mysql",
     "es6",
     "pool",
-    "cache"
+    "cache",
+    "transaction"
   ],
   "author": "djansyle",
   "license": "MIT",
@@ -52,7 +53,7 @@
   },
   "ava": {
     "files": [
-      "test/model.js"
+      "test/**.js"
     ],
     "timeout": "10s",
     "concurrency": 3,

@@ -5,9 +5,9 @@ import Promise from 'bluebird';
 import debug from 'debug';
 import assert from 'assert';
 import SqlString from 'sqlstring';
-import objectHash from 'object-hash';
-import stringHash from 'string-hash';
-import LRU from 'lru-cache';
+
+import { Cache, hashPair } from './cache';
+import Transaction from './transaction';
 
 Promise.promisifyAll([Pool, Connection]);
 
@@ -67,10 +67,6 @@ const logger = {
   verbose: debug('mqsp:verbose'),
 };
 
-function hashPair(qs, qa = {}) {
-  return stringHash(`${stringHash(qs)}${stringHash(objectHash(qa))}`);
-}
-
 export default class MQSP {
   /**
    * MQSP Constructor
@@ -83,9 +79,8 @@ export default class MQSP {
 
     this.benchHandler = null;
 
-    const { host = 'localhost' } = config;
+    const { host = 'localhost', disableCache } = config;
     const { writeHosts = [], readHosts = [] } = config;
-    const { cache = { maxAge: 1000 * 60 * 10 }, disableCache } = config;
 
     assert(writeHosts instanceof Array, 'Expecting property `writeHosts` to be an Array.');
     assert(readHosts instanceof Array, 'Expecting property `readHosts` to be an Array.');
@@ -117,7 +112,7 @@ export default class MQSP {
     // Expose escape
     this.escape = mysql.escape;
     if (!disableCache) {
-      this.cache = new LRU(cache);
+      this.cache = new Cache(config);
     }
   }
 
@@ -149,9 +144,10 @@ export default class MQSP {
    * @param {String} qs
    * @param {Array} qa
    * @param {Connection} conn
+   * @param {boolean} [release]
    * @returns {Promise.<Object>}
    */
-  async query(qs, qa, conn) {
+  async query(qs, qa, conn, release = true) {
     logger.verbose({ qs, qa });
 
     let result = null;
@@ -168,7 +164,9 @@ export default class MQSP {
     } catch (e) {
       throw e;
     } finally {
-      conn.release();
+      if (release) {
+        conn.release();
+      }
     }
 
     return result;
@@ -185,15 +183,7 @@ export default class MQSP {
       return this.queryRead(qs, qa);
     }
 
-    const key = hashPair(qs, qa);
-    let data = this.cache.get(key);
-
-    if (!data) {
-      data = await this.queryRead(qs, qa);
-      this.cache.set(key, data);
-    }
-
-    return data;
+    return this.cache.execute(hashPair(qs, qa), this.queryRead.bind(this, qs, qa));
   }
 
   /**
@@ -286,10 +276,23 @@ export default class MQSP {
     return formatDate(...args.map(value => twoDigits(value)));
   }
 
+  /**
+   * Closes all the connection of read and write pools.
+   * @returns {Promise.<void>}
+   */
   async close() {
     await Promise.all([
       this.pools.read.forEach(conn => conn.endAsync()),
       this.pools.write.forEach(conn => conn.endAsync()),
     ]);
+  }
+
+  /**
+   * Gets a transaction instance.
+   * @param {boolean} [rollbackOnError]
+   * @returns Transaction
+   */
+  getTransaction(rollbackOnError) {
+    return new Transaction(this, rollbackOnError);
   }
 }
