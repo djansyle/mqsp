@@ -2,7 +2,7 @@ import test from 'ava';
 import Promise from 'bluebird';
 import times from 'lodash/times';
 
-import MQSP from './../src/index';
+import MQSP from './../build/index';
 
 const config = {
   user: 'root',

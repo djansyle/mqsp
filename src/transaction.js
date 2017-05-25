@@ -1,6 +1,6 @@
 import assert from 'assert';
 import debug from 'debug';
-import MQSP from './../src/mqsp';
+import MQSP from './mqsp';
 
 const logger = {
   info: debug('mqsp:transaction:info'),
