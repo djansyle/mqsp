@@ -4,3 +4,5 @@ circle.yml
 .babelrc
 .eslintrc
 yarn.lock
+.gitattributes
+.gitignore

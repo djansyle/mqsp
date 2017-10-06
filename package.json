@@ -1,10 +1,10 @@
 {
   "name": "mqsp",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "description": "",
-  "main": "build/index.js",
+  "main": "build/mqsp.js",
   "scripts": {
-    "test": "npm run build && ava",
+    "test": "ava",
     "clean": "rm -rf build ",
     "build": "npm run clean && babel src --out-dir build",
     "lint": "eslint src/ test/",
@@ -25,7 +25,6 @@
   "license": "MIT",
   "devDependencies": {
     "ava": "^0.18.2",
-    "babel": "^6.23.0",
     "babel-cli": "^6.24.0",
     "babel-eslint": "^7.1.1",
     "babel-plugin-transform-async-to-generator": "^6.22.0",

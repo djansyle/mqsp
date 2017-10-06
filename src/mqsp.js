@@ -67,52 +67,79 @@ const logger = {
   verbose: debug('mqsp:verbose'),
 };
 
-export default class MQSP {
+let hosts = null;
+let cache = null;
+
+export function initialize(config) {
+  if (hosts) {
+    return hosts;
+  }
+
+  const { host = 'localhost' } = config;
+  const { writeHosts = [], readHosts = [] } = config;
+
+  assert(writeHosts instanceof Array, 'Expecting property `writePool` to be an Array.');
+  assert(readHosts instanceof Array, 'Expecting property `readPool` to be an Array.');
+
+  if (writeHosts.length === 0) {
+    writeHosts.push(host);
+  }
+
+  if (readHosts.length === 0) {
+    readHosts.push(host);
+  }
+
+  assert(writeHosts.length >= 1, 'Did not find any write host.');
+  assert(readHosts.length >= 1, 'Did not find any read host.');
+
+  const sqlConfig = Object.assign({ queryFormat }, config);
+  hosts = {
+    write: writeHosts.map(uri => createPool(uri, sqlConfig)),
+    read: readHosts.map(uri => createPool(uri, sqlConfig)),
+  };
+
+  cache = new Cache(config);
+  return hosts;
+}
+
+export async function close() {
+  await Promise.all([
+    hosts.read.forEach(conn => conn.endAsync()),
+    hosts.write.forEach(conn => conn.endAsync()),
+  ]);
+
+  hosts = null;
+  cache = null;
+}
+
+export class MQSP {
   /**
    * MQSP Constructor
    * Initialize round robin counter for write and read.
    * @param config
    */
-  constructor(config) {
+  constructor(config = {}) {
+    assert(hosts, 'Function initialize has not been called.');
+
     this.writeCounter = 0;
     this.readCounter = 0;
 
     this.benchHandler = null;
 
-    const { host = 'localhost', disableCache } = config;
-    const { writeHosts = [], readHosts = [] } = config;
+    this.writePool = hosts.write;
+    this.readPool = hosts.read;
 
-    assert(writeHosts instanceof Array, 'Expecting property `writeHosts` to be an Array.');
-    assert(readHosts instanceof Array, 'Expecting property `readHosts` to be an Array.');
-
-    if (writeHosts.length === 0) {
-      writeHosts.push(host);
-    }
-
-    if (readHosts.length === 0) {
-      readHosts.push(host);
-    }
-
-    assert(writeHosts.length >= 1, 'Did not find any write host.');
-    assert(readHosts.length >= 1, 'Did not find any read host.');
-
-    const sqlConfig = Object.assign({ queryFormat }, config);
-    this.pools = {
-      write: writeHosts.map(uri => createPool(uri, sqlConfig)),
-      read: readHosts.map(uri => createPool(uri, sqlConfig)),
-    };
-
-    this.writeHosts = writeHosts;
-    this.readHosts = readHosts;
-
-    // For faster read.
-    this.totalWrite = writeHosts.length;
-    this.totalRead = readHosts.length;
+    // For faster read
+    this.totalWrite = this.writePool.length;
+    this.totalRead = this.readPool.length;
 
     // Expose escape
     this.escape = mysql.escape;
-    if (!disableCache) {
-      this.cache = new Cache(config);
+
+    // Enable cache by default
+    this.cache = cache;
+    if (config.disableCache) {
+      this.cache = null;
     }
   }
 
@@ -124,7 +151,7 @@ export default class MQSP {
    */
   async borrowRead() {
     this.readCounter += 1;
-    return this.pools.read[this.readCounter % this.totalRead].getConnectionAsync();
+    return this.readPool[this.readCounter % this.totalRead].getConnectionAsync();
   }
 
   /**
@@ -135,7 +162,7 @@ export default class MQSP {
    */
   async borrowWrite() {
     this.writeCounter += 1;
-    return this.pools.write[this.writeCounter % this.totalWrite].getConnectionAsync();
+    return this.writePool[this.writeCounter % this.totalWrite].getConnectionAsync();
   }
 
   /**
@@ -274,17 +301,6 @@ export default class MQSP {
     ];
 
     return formatDate(...args.map(value => twoDigits(value)));
-  }
-
-  /**
-   * Closes all the connection of read and write pools.
-   * @returns {Promise.<void>}
-   */
-  async close() {
-    await Promise.all([
-      this.pools.read.forEach(conn => conn.endAsync()),
-      this.pools.write.forEach(conn => conn.endAsync()),
-    ]);
   }
 
   /**
