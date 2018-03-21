@@ -2,7 +2,7 @@ import test from 'ava';
 import Promise from 'bluebird';
 import times from 'lodash/times';
 
-import MQSP from './../build/index';
+import { initialize, MQSP } from './../src/mqsp';
 
 const config = {
   user: 'root',
@@ -11,11 +11,13 @@ const config = {
   host: 'localhost',
   multipleStatements: true,
 };
-const mqsp = new MQSP(config);
 
+let mqsp = null;
 const getVal = 'SELECT val FROM MQSPT.testTransaction WHERE id = ?';
 
 test.before(async () => {
+  initialize(config);
+  mqsp = new MQSP(config);
   await mqsp.exec('DROP SCHEMA IF EXISTS MQSPT');
   await mqsp.exec('CREATE SCHEMA MQSPT DEFAULT CHARACTER SET utf8');
   await mqsp.exec(`

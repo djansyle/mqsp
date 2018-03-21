@@ -1,13 +1,13 @@
 # MQSP
 
-[![CircleCI](https://img.shields.io/circleci/project/github/djansyle/mqsp.svg?style=flat-square)](https://circleci.com/gh/djansyle/mqsp) [![npm](https://img.shields.io/npm/dm/mqsp.svg?style=flat-square)](https://www.npmjs.com/package/mqsp)
-
 MQSP is a tool for mysql that supports for multiple read and write replica.
 It also support object parsing(escaped) for your query, and result caching.
 Any property that is not mapped in the query will have a default value of `NULL`.
 
+[![CircleCI](https://img.shields.io/circleci/project/github/djansyle/mqsp.svg?style=flat-square)](https://circleci.com/gh/djansyle/mqsp) [![npm](https://img.shields.io/npm/dm/mqsp.svg?style=flat-square)](https://www.npmjs.com/package/mqsp)
+
 ```javascript
-  import MQSP from 'mqsp';
+  import { MQSP } from 'mqsp';
 
   const mqsp = new MQSP();
   const result = await mqsp.exec(`
@@ -19,15 +19,16 @@ Any property that is not mapped in the query will have a default value of `NULL`
 
 ## Quickstart
 ```javascript
-  import MQSP from 'mqsp';
+  import { initialize, MQSP } from 'mqsp';
 
-  const mqsp = new MQSP({
+  initialize({
     user: 'root',
     password: 'hardpassword',
     database: 'db',
     writeHosts: ['localhost', 'localhost'],
     readHosts: ['localhost', 'localhost']
   });
+  const mqsp = new MQSP();
 
   let result = await mqsp.getRow('SELECT hello AS message');
   console.log(result);
@@ -39,14 +40,14 @@ Any property that is not mapped in the query will have a default value of `NULL`
 ```
 You can also pass a config like this, if your read and write hosts are the same.
 ```javascript
-  const mysql = new MQSP({
+  initialize({
     user: 'root',
     password: 'hardpassword',
     database: 'db',
     host: 'localhost'
   })
 ```
-Instead of adding them both to `writeHosts` and `readHosts` array.
+Instead of adding them both to `writePool` and `readPool` array.
 
 ## Caching
 Read operations are being cached with a max age of 5 minutes.
@@ -72,7 +73,7 @@ MQSP supports mysql transaction.
 ### Constructor
 Creates a pool of the given config. The config is passed to the `createPool` function
 of the library `mysql`. Only that, the host is being replaced with the values under
-the `writeHosts` and `readHosts`.
+the `writePool` and `readPool`.
 
 ### Query single row (read)
 Get a single row, of the query.
@@ -143,7 +144,8 @@ Escapes the value to prevent sql injection.
 ### Close
 Closes the read and write connection pool
 ```javascript
-  await mqsp.close();
+  import { close } from 'mqsp';
+  await close();
   await mqsp.getRow('SELECT 1');
   // Will throw an error
 ```
