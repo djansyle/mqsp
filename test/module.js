@@ -1,9 +1,7 @@
 /* eslint-disable global-require */
 import test from 'ava';
+import clearModuleCache from './helpers/clearModuleCache';
 
-function clearModuleCache() {
-  Object.keys(require.cache).forEach((key) => { delete require.cache[key]; });
-}
 const config = {
   user: 'root',
   password: '',

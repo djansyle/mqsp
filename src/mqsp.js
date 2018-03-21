@@ -75,7 +75,7 @@ export function initialize(config) {
     return hosts;
   }
 
-  const { host = 'localhost' } = config;
+  const { host = 'localhost', disableCache } = config;
   const { writeHosts = [], readHosts = [] } = config;
 
   assert(writeHosts instanceof Array, 'Expecting property `writePool` to be an Array.');
@@ -98,7 +98,10 @@ export function initialize(config) {
     read: readHosts.map(uri => createPool(uri, sqlConfig)),
   };
 
-  cache = new Cache(config);
+  if (!disableCache) {
+    cache = new Cache(config);
+  }
+
   return hosts;
 }
 
@@ -136,8 +139,11 @@ export class MQSP {
     // Expose escape
     this.escape = mysql.escape;
 
-    // Enable cache by default
     this.cache = cache;
+    if (!cache && !config.disableCache) {
+      logger.info('Cannot enable cache to this instance. Global cache is disabled in initialize function.');
+    }
+
     if (config.disableCache) {
       this.cache = null;
     }

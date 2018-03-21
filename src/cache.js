@@ -12,10 +12,8 @@ export class Cache {
    * @param config
    */
   constructor(config) {
-    const { cache = { maxAge: 1000 * 60 * 10 }, disableCache } = config;
-    if (!disableCache) {
-      this.cache = new LRU(cache);
-    }
+    const { cache = { maxAge: 1000 * 60 * 10 } } = config;
+    this.cache = new LRU(cache);
   }
 
   /**
